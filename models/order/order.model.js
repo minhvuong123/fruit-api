@@ -13,8 +13,7 @@ const orderSchema = new mongoose.Schema({
     type: String
   },
   order_transaction: {
-    type: String,
-    required: true
+    type: String
   },
   created_at: {
     type: String

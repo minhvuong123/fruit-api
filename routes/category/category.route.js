@@ -4,9 +4,9 @@ const categorySchema = require('../../models/category/category.model');
 
 router.get('/', async function(req, res, next){
   try {
-    const category = await categorySchema.find();
+    const categories = await categorySchema.find();
     res.json({
-      category
+      categories
     });
   } catch (error) {
     res.status(400).json({
