@@ -19,9 +19,11 @@ router.get('/:page/:limit', async function(req, res, next){
   try {	
     const page = +req.params.page - 1 || 0;	
     const limit = +req.params.limit || 10;	
-    const products = await productSchema.find().skip(page*limit).limit(limit);	
+    const products = await productSchema.find().skip(page*limit).limit(limit);
+    const count = await productSchema.count();
     res.json({	
-      products	
+      products,
+      count	
     });	
   } catch (error) {	
     res.status(400).json({	
@@ -48,15 +50,23 @@ router.get('/:id', async function(req, res, next){
 router.post('/category', async function(req, res, next){	
   try {	
     const id = req.body.id;
+    const page = +req.body.page - 1 || 0;	
+    const limit = +req.body.limit || 10;	
     let products = [];
+    let count = 0;
     if (id === 'all') {
-      products = await productSchema.find();
+      products = await productSchema.find().skip(page*limit).limit(limit);
+      count = await productSchema.count();
     } else {
-      products = await productSchema.where({product_type: id}).find();
+      products = await productSchema.where({product_type: id}).find().skip(page*limit).limit(limit);
+      count = await productSchema.where({product_type: id}).count();
     }
     
+    console.log(id, page, limit, products, count);
+
     res.json({	
-      products
+      products,
+      count
     });	
   } catch (error) {	
     res.status(400).json({	

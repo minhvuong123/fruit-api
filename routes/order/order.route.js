@@ -5,8 +5,11 @@ const orderSchema = require('../../models/order/order.model');
 router.get('/', async function (req, res, next) {
   try {
     const orders = await orderSchema.find();
+    const count = await orderSchema.count();
+    console.log(orders, count)
     res.json({
-      orders
+      orders,
+      count
     });
   } catch (error) {
     res.status(400).json({
