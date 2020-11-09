@@ -6,7 +6,6 @@ router.get('/', async function (req, res, next) {
   try {
     const orders = await orderSchema.find();
     const count = await orderSchema.count();
-    console.log(orders, count)
     res.json({
       orders,
       count
@@ -48,6 +47,28 @@ router.post('/', async function (req, res, next) {
         status: 'ok'
       });
     }
+  } catch (error) {
+    res.status(400).json({
+      message: error
+    })
+  }
+});
+
+router.post('/delete', async function (req, res, next){
+  try {
+    console.log("delete")
+    const result = await orderSchema.deleteOne({_id: req.body.id});
+    if (result.ok === 1) {
+      res.status(200);
+      res.json({
+        status: 'ok'
+      });
+      return;
+    }
+    res.status(401);
+    res.json({
+      status: 'fail'
+    });
   } catch (error) {
     res.status(400).json({
       message: error
