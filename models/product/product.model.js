@@ -36,6 +36,9 @@ const productSchema = new mongoose.Schema({
   product_origin: {
     type: String
   },
+  product_ward: {
+    type: String
+  },
   product_supplier: {
     type: String
   },
