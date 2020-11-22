@@ -24,7 +24,7 @@ app.use('/categories', categories);
 app.use('/users', users);
 app.use('/orders', orders);
 
-mongoose.connect('mongodb://localhost/marketFruits', {useNewUrlParser: true});
+mongoose.connect('mongodb://localhost/marketFruits', {useNewUrlParser: true, useUnifiedTopology: true});
 const connect = mongoose.connection;
 connect.on('error', function(){
   console.log('Mongodb connect to fail !');

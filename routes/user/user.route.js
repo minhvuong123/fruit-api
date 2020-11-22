@@ -40,8 +40,8 @@ router.post('/', async function (req, res, next) {
     const base64Data = req.body.user.user_image_base64.split(";base64,")[1];
     const exten = req.body.typeImage;
     const imageName = uuid();
-    const saveUrl = `${path.join(rootPath, 'public/users')}\\${imageName}.${exten}`;
-    req.body.user.user_image = base64Data ? `static/users/${imageName}.${exten}` : '';
+    const saveUrl = `${path.join(rootPath, 'public/images')}\\${imageName}.${exten}`;
+    req.body.user.image_url = base64Data ? `static/images/${imageName}.${exten}` : '';
 
     if (base64Data) {
       delete req.body.user.user_image_base64;
@@ -54,7 +54,7 @@ router.post('/', async function (req, res, next) {
             user_phone: req.body.user.user_phone,
             user_address: req.body.user.user_address,
             user_password: req.body.user.user_password,
-            user_image: req.body.user.user_image,
+            image_url: req.body.user.image_url,
             user_role: req.body.user.user_role,
             created_at: req.body.user.created_at
           });
@@ -71,7 +71,7 @@ router.post('/', async function (req, res, next) {
         user_phone: req.body.user.user_phone,
         user_address: req.body.user.user_address,
         user_password: req.body.user.user_password,
-        user_image: req.body.user.user_image,
+        image_url: req.body.user.image_url,
         user_role: req.body.user.user_role,
         created_at: req.body.user.created_at
       });
@@ -93,15 +93,15 @@ router.patch('/', async function (req, res, next) {
   try {
     if (req.body.user.user_image_base64) {
       const base64Data = req.body.user.user_image_base64.split(";base64,")[1];
-      const length = req.body.user.user_image.split('.').length;
-      const exten = req.body.user.user_image.split('.')[length - 1];
+      const length = req.body.user.image_url.split('.').length;
+      const exten = req.body.user.image_url.split('.')[length - 1];
       const imageName = uuid();
-      const saveUrl = `${path.join(rootPath, 'public/users')}\\${imageName}.${exten}`;
-      req.body.user.user_image = `static/users/${imageName}.${exten}`;
+      const saveUrl = `${path.join(rootPath, 'public/images')}\\${imageName}.${exten}`;
+      req.body.user.image_url = `static/images/${imageName}.${exten}`;
 
       delete req.body.user.user_image_base64;
       delete req.body.user.status;
-      console.log(req.body.user);
+
       require("fs").writeFile(saveUrl, base64Data, 'base64', async function (err) {
         if (!err) {
           const user = await userSchema.where({ _id: req.body.user._id }).updateOne({ ...req.body.user })

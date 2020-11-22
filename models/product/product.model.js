@@ -19,18 +19,18 @@ const productSchema = new mongoose.Schema({
     type: String
   },
   product_images_link: {
-    type: Array
+    type: Array,
+    default: []
   },
   product_images_list: {
-    type: Array
+    type: Array,
+    default: []
   },
   product_rate: {
-    type: Array
+    type: Array,
+    default: []
   },
   product_size: {
-    type: String
-  },
-  product_type: {
     type: String
   },
   product_origin: {
@@ -40,9 +40,6 @@ const productSchema = new mongoose.Schema({
     type: String
   },
   product_supplier: {
-    type: String
-  },
-  product_category: {
     type: String
   },
   product_discount: {
