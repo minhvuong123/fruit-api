@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const bcrypt = require('bcrypt');
 const { rootPath } = require('../../utils');
 const { v1: uuid } = require('uuid');
 const userSchema = require('../../models/user/user.model');
@@ -125,6 +126,82 @@ router.patch('/', async function (req, res, next) {
     res.status(400).json({
       status: 'error'
     });
+  }
+})
+
+router.post('/register', async function (req, res, next) {
+  try {
+    const user_name = req.body.user.user_name;
+    const user_email = req.body.user.user_email;
+    const user_phone = req.body.user.user_phone;
+    const user_password = bcrypt.hashSync(req.body.user.user_password, 10);
+    const created_at = req.body.user.created_at;
+    // const result = await userSchema.where({ _id }).findOne();
+    const user = new userSchema({ user_name, user_email, user_phone, user_password, created_at });
+    const result = await user.save();
+
+    if (Object.keys(result).length > 0) {
+      res.status(200).json({
+        user: result
+      });
+    } else {
+      res.status(404).json({
+        message: 'Information is error'
+      });
+    }
+
+  } catch (error) {
+    res.status(400).json({
+      message: 'server error'
+    })
+  }
+})
+
+router.post('/login', async function (req, res, next) {
+  try {
+    const user_name = req.body.user.user_name;
+    const user_password = req.body.user.user_password;
+
+    const user = await userSchema.where({ user_name }).findOne();
+    // console.log(user);
+    if (Object.keys(user).length > 0) {
+      const match = await bcrypt.compare(user_password, user.user_password);
+      if (match) {
+        res.status(200).json({
+          user: user
+        });
+        return;
+      }
+      res.status(404).json({
+        status: 'error'
+      });
+      return;
+    }
+    res.status(404).json({
+      status: 'error'
+    });
+    return;
+  } catch (error) {
+    res.status(400).json({
+      message: 'server error'
+    })
+  }
+})
+
+router.post('/delete', async function (req, res, next) {
+  try {
+    const id = req.body.id;
+    const result = await userSchema.deleteOne({ _id: id });
+
+    if (result.ok === 1) {
+      res.status(200).json({
+        status: 'ok'
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      message: 'server error'
+    })
   }
 })
 

@@ -14,15 +14,15 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   user_address: {
-    type: String,
-    required: true
+    type: String
   },
   user_password: {
     type: String,
     required: true
   },
   image_url: {
-    type: String
+    type: String,
+    default: ''
   },
   user_role: {
     type: String,
