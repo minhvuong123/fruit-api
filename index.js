@@ -4,13 +4,13 @@ const PORT = 4000;
 
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose')
-const upload = require('express-fileupload');
+const mongoose = require('mongoose');
+const { authorization } = require('./middlewares/middlewares');
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json({limit: '10mb'}));
-app.use(upload());
+app.use((req, res, next) => authorization(req, res, next));
 app.use('/static', express.static('public'));
 
 // routes

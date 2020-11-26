@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const bcrypt = require('bcrypt');
-const { rootPath } = require('../../utils');
+const jwt = require('jsonwebtoken');
+const { rootPath, configToken, verifyJwtToken } = require('../../utils');
 const { v1: uuid } = require('uuid');
 const userSchema = require('../../models/user/user.model');
 
@@ -94,8 +95,7 @@ router.patch('/', async function (req, res, next) {
   try {
     if (req.body.user.user_image_base64) {
       const base64Data = req.body.user.user_image_base64.split(";base64,")[1];
-      const length = req.body.user.image_url.split('.').length;
-      const exten = req.body.user.image_url.split('.')[length - 1];
+      const exten = req.body.typeImage;
       const imageName = uuid();
       const saveUrl = `${path.join(rootPath, 'public/images')}\\${imageName}.${exten}`;
       req.body.user.image_url = `static/images/${imageName}.${exten}`;
@@ -108,7 +108,8 @@ router.patch('/', async function (req, res, next) {
           const user = await userSchema.where({ _id: req.body.user._id }).updateOne({ ...req.body.user })
           if (user.ok === 1) {
             res.status(200).json({
-              status: 'ok'
+              status: 'ok',
+              image_url: req.body.user.image_url
             });
           }
         }
@@ -117,7 +118,8 @@ router.patch('/', async function (req, res, next) {
       const user = await userSchema.where({ _id: req.body.user._id }).updateOne({ ...req.body.user })
       if (user.ok === 1) {
         res.status(200).json({
-          status: 'ok'
+          status: 'ok',
+          image_url: req.body.user.image_url
         });
       }
     }
@@ -157,19 +159,23 @@ router.post('/register', async function (req, res, next) {
   }
 })
 
+const refreshTokens = {};
 router.post('/login', async function (req, res, next) {
   try {
     const user_name = req.body.user.user_name;
     const user_password = req.body.user.user_password;
 
     const user = await userSchema.where({ user_name }).findOne();
-    // console.log(user);
+   
     if (Object.keys(user).length > 0) {
       const match = await bcrypt.compare(user_password, user.user_password);
       if (match) {
-        res.status(200).json({
-          user: user
-        });
+        const token = jwt.sign({...user}, configToken.secretToken, { expiresIn: configToken.tokenLife });
+        const refreshToken = jwt.sign({...user}, configToken.refreshTokenSecret)
+
+        refreshTokens[refreshToken] = user;
+        
+        res.status(200).json({ token, refreshToken });
         return;
       }
       res.status(404).json({
@@ -187,6 +193,29 @@ router.post('/login', async function (req, res, next) {
     })
   }
 })
+
+router.post('/refreshToken', async function(req, res){
+  const refreshTokenClient = req.body.refreshToken;
+  if (refreshTokenClient && refreshTokens[refreshTokenClient]) {
+      try {
+          await verifyJwtToken(refreshTokenClient, configToken.refreshTokenSecret);
+          const user = refreshTokens[refreshTokenClient];
+
+          const accessToken = jwt.sign({...user}, configToken.secretToken, { expiresIn: 60 })
+          res.json({
+              token: accessToken
+          });
+      } catch (error) {
+          res.status(403).json({
+              message: 'Invalid refresh token',
+          });
+      }
+  } else {
+      res.status(403).send({
+          message: 'No token provided.',
+      });
+  }
+});
 
 router.post('/delete', async function (req, res, next) {
   try {
