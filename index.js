@@ -18,11 +18,13 @@ const products = require('./routes/product/product.route');
 const categories = require('./routes/category/category.route');
 const users = require('./routes/user/user.route');
 const orders = require('./routes/order/order.route');
+const transactions = require('./routes/transaction/transaction.route');
 
 app.use('/products', products);
 app.use('/categories', categories);
 app.use('/users', users);
 app.use('/orders', orders);
+app.use('/transaction', transactions);
 
 mongoose.connect('mongodb://localhost/marketFruits', {useNewUrlParser: true, useUnifiedTopology: true});
 const connect = mongoose.connection;

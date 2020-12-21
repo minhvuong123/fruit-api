@@ -34,6 +34,7 @@ router.post('/', async function (req, res, next) {
       }
     } else {
       const order = new orderSchema({
+        order_user: req.body.order.order_user,
         order_product: req.body.order.order_product,
         order_amount: req.body.order.order_amount,
         order_status: req.body.order.order_status,
@@ -56,7 +57,6 @@ router.post('/', async function (req, res, next) {
 
 router.post('/delete', async function (req, res, next){
   try {
-    console.log("delete")
     const result = await orderSchema.deleteOne({_id: req.body.id});
     if (result.ok === 1) {
       res.status(200);

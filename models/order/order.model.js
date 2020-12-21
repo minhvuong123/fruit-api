@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const productSchema = require('../product/product.model');
 
 const orderSchema = new mongoose.Schema({
-  order_product: {
-    type: String,
-    required: true
+  order_user: {
+    type: String
   },
+  order_product: productSchema.schema,
   order_amount: {
     type: Number,
     default: 0 

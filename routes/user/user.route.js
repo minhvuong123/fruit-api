@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const { rootPath, configToken, verifyJwtToken } = require('../../utils');
 const { v1: uuid } = require('uuid');
 const userSchema = require('../../models/user/user.model');
+const refreshTokenSchema = require('../../models/refreshToken/refreshToken.model');
 
 router.get('/', async function (req, res, next) {
   try {
@@ -14,8 +15,8 @@ router.get('/', async function (req, res, next) {
       users
     });
   } catch (error) {
-    res.status(400).json({
-      message: 'server error'
+    res.status(500).json({
+      message: 'Server error'
     })
   }
 })
@@ -31,8 +32,8 @@ router.get('/:page/:limit', async function (req, res, next) {
       count
     });
   } catch (error) {
-    res.status(400).json({
-      message: 'server error'
+    res.status(500).json({
+      message: 'Server error'
     })
   }
 })
@@ -84,8 +85,8 @@ router.post('/', async function (req, res, next) {
     }
 
   } catch (error) {
-    res.status(400).json({
-      message: 'server error'
+    res.status(500).json({
+      message: 'Server error'
     })
   }
 })
@@ -125,8 +126,8 @@ router.patch('/', async function (req, res, next) {
     }
 
   } catch (error) {
-    res.status(400).json({
-      status: 'error'
+    res.status(500).json({
+      status: 'Server error'
     });
   }
 })
@@ -153,8 +154,8 @@ router.post('/register', async function (req, res, next) {
     }
 
   } catch (error) {
-    res.status(400).json({
-      message: 'server error'
+    res.status(500).json({
+      message: 'Server error'
     })
   }
 })
@@ -164,32 +165,44 @@ router.post('/login', async function (req, res, next) {
   try {
     const user_name = req.body.user.user_name;
     const user_password = req.body.user.user_password;
+    const created_at = req.body.user.created_at;
 
     const user = await userSchema.where({ user_name }).findOne();
-   
+
     if (Object.keys(user).length > 0) {
       const match = await bcrypt.compare(user_password, user.user_password);
       if (match) {
         const token = jwt.sign({...user}, configToken.secretToken, { expiresIn: configToken.tokenLife });
         const refreshToken = jwt.sign({...user}, configToken.refreshTokenSecret)
-
-        refreshTokens[refreshToken] = user;
         
-        res.status(200).json({ token, refreshToken });
+        refreshTokens[refreshToken] = user;
+
+        // save refresh token into db
+        const refreshTokenModel = new refreshTokenSchema({
+          user_id: user._id,
+          token: refreshToken,
+          created_at: created_at
+        });
+        await refreshTokenModel.save();
+        
+        res.status(200).json({ 
+          status: 'ok',
+          token
+        });
         return;
       }
       res.status(404).json({
-        status: 'error'
+        status: 'Password is wrong!'
       });
       return;
     }
     res.status(404).json({
-      status: 'error'
+      status: 'User is not found !'
     });
     return;
   } catch (error) {
-    res.status(400).json({
-      message: 'server error'
+    res.status(500).json({
+      message: 'Server error'
     })
   }
 })
@@ -228,7 +241,7 @@ router.post('/delete', async function (req, res, next) {
       });
     }
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       message: 'server error'
     })
   }

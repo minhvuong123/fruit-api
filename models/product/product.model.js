@@ -33,6 +33,9 @@ const productSchema = new mongoose.Schema({
   product_size: {
     type: String
   },
+  product_type: {
+    type: String
+  },
   product_origin: {
     type: String
   },

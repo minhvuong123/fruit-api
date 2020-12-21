@@ -65,7 +65,7 @@ router.post('/', async function(req, res, next){
 
 router.patch('/', async function(req, res, next){
   try {
-    const category = await categorySchema.where({ _id: req.body.category._id }).updateOne({ ...req.body.category })
+    const category = await categorySchema.where({ _id: req.body.category._id }).updateOne({ ...req.body.category });
     if (category.ok === 1) {
       res.status(200).json({
         status: 'ok'
