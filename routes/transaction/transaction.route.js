@@ -6,9 +6,26 @@ const orderSchema = require('../../models/order/order.model');
 router.get('/', async function (req, res, next) {
   try {
     const transctions = await transactionSchema.find();
-    const count = await transactionSchema.count();
+    const count = await transactionSchema.countDocuments();
     res.json({
       transctions,
+      count
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: 'server error'
+    })
+  }
+})
+
+router.get('/:page/:limit', async function (req, res, next) {
+  try {
+    const page = +req.params.page - 1 || 0;
+    const limit = +req.params.limit || 10;
+    const transactions = await transactionSchema.find().skip(page * limit).limit(limit);
+    const count = await transactionSchema.countDocuments();
+    res.status(200).json({
+      transactions,
       count
     });
   } catch (error) {
@@ -29,7 +46,7 @@ router.post('/', async function (req, res, next) {
         transaction_ward: req.body.transaction.transaction_ward,
         transaction_street: req.body.transaction.transaction_street,
         transaction_orders: req.body.transaction.transaction_orders,
-        created_at: req.body.transaction.order_status
+        created_at: req.body.transaction.created_at
       });
 
       const result = await transction.save();

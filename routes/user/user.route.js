@@ -26,7 +26,7 @@ router.get('/:page/:limit', async function (req, res, next) {
     const page = +req.params.page - 1 || 0;
     const limit = +req.params.limit || 10;
     const users = await userSchema.find().skip(page * limit).limit(limit);
-    const count = await userSchema.count();
+    const count = await userSchema.countDocuments();
     res.status(200).json({
       users,
       count

@@ -5,8 +5,25 @@ const orderSchema = require('../../models/order/order.model');
 router.get('/', async function (req, res, next) {
   try {
     const orders = await orderSchema.find();
-    const count = await orderSchema.count();
+    const count = await orderSchema.countDocuments();
     res.json({
+      orders,
+      count
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: 'server error'
+    })
+  }
+})
+
+router.get('/:page/:limit', async function (req, res, next) {
+  try {
+    const page = +req.params.page - 1 || 0;
+    const limit = +req.params.limit || 10;
+    const orders = await orderSchema.find().skip(page * limit).limit(limit);
+    const count = await orderSchema.countDocuments();
+    res.status(200).json({
       orders,
       count
     });

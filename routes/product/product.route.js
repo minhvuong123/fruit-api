@@ -24,7 +24,7 @@ router.get('/:page/:limit', async function (req, res, next) {
     const page = +req.params.page - 1 || 0;
     const limit = +req.params.limit || 10;
     const products = await productSchema.find().skip(page * limit).limit(limit);
-    const count = await productSchema.count();
+    const count = await productSchema.countDocuments();
     res.json({
       products,
       count
@@ -59,10 +59,10 @@ router.post('/category', async function (req, res, next) {
     let count = 0;
     if (id === 'all') {
       products = await productSchema.find().skip(page * limit).limit(limit);
-      count = await productSchema.count();
+      count = await productSchema.countDocuments();
     } else {
       products = await productSchema.where({ product_type: id }).find().skip(page * limit).limit(limit);
-      count = await productSchema.where({ product_type: id }).count();
+      count = await productSchema.where({ product_type: id }).countDocuments();
     }
 
     res.status(200).json({
