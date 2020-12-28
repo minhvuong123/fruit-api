@@ -4,6 +4,7 @@ const _ = require('lodash');
 const { v1: uuid } = require('uuid');
 const { rootPath } = require('../../utils');
 const path = require('path');
+const moment = require('moment');
 const productSchema = require('../../models/product/product.model');
 
 router.get('/', async function (req, res, next) {
@@ -86,38 +87,68 @@ const mergeArrayOfObjects = (original, newdata, selector = 'key') => {
   return original;
 };
 
-router.post('/filter', async function (req, res, next) {
+router.post('/filter/:page/:limit', async function (req, res, next) {
   // console.log(req.body.product_ward, req.body.product_category)
   try {
     let results = [];
     const product_category = req.body.product_category;
     const product_wards = req.body.product_ward;
+    const string_price = req.body.string_price;
+    const search_best_selling = req.body.search_best_selling ? 'desc' : '';
+    const search_best_new = req.body.search_best_new ? 'desc' : '';
 
     if (product_category === 'all') {
+      // search to [TP.HCM, TP.Ha Noi, ...]
       if (product_wards.length > 0) {
         for (const ward of product_wards) {
           const productWard = await productSchema.where({ product_ward: ward });
           results.push(...productWard);
-          console.log(productWard)
         }
       } else {
         results = await productSchema.find();
       }
     } else {
+      // search to [TP.HCM, TP.Ha Noi, ...]
       if (product_wards.length > 0) {
         for (const ward of product_wards) {
           const productWard = await productSchema.where({ product_type: product_category, product_ward: ward });
           results.push(...productWard);
-          console.log(productWard)
         }
       } else {
         results = await productSchema.where({ product_type: product_category });
       }
     }
 
-    // results = mergeArrayOfObjects(productToCategory, productToWard, "_id");
+    let count = results.length;
+    let resultIsCut = false;
+    const page = +req.params.page - 1 || 0;
+    const limit = +req.params.limit || 10;
+    const start = page * limit;
+    const end = start + limit;
+
+    if (search_best_new) {
+      results = _.orderBy(results, ['created_at'], [search_best_new]);
+      results = results.splice(start, end);
+      resultIsCut = true;
+    }
+
+    if (search_best_selling) {
+      results = _.orderBy(results, ['product_sell_amount'], [search_best_selling]);
+      if (!resultIsCut) {
+        results = results.splice(start, end);
+      }
+    }
+
+    if (string_price) {
+      results = _.orderBy(results, ['product_price'], [string_price]);
+      if (!resultIsCut) {
+        results = results.splice(start, end);
+      }
+    }
+
     res.status(200).json({
-      products: results
+      products: results,
+      count
     });
 
   } catch (error) {
@@ -134,7 +165,7 @@ router.post('/', async function (req, res, next) {
     const exten = req.body.typeImage;
     const imageName = uuid();
     const saveUrl = `${path.join(rootPath, 'public/images')}\\${imageName}.${exten}`;
-    // req.body.product.product_images_link[0].image_url = `static/images/${imageName}.${exten}`;
+
     req.body.product.product_images_link = [
       {
         uid: uuid(),
@@ -175,20 +206,20 @@ router.post('/', async function (req, res, next) {
       });
     } else {
       const product = new productSchema({
-        product_title: req.body.product_title,
-        product_price: req.body.product_price,
-        product_amount: req.body.product_amount,
-        product_des: req.body.product_des,
-        product_images_link: req.body.product_images_link,
-        product_images_list: req.body.product_images_list,
-        product_rate: req.body.product_rate,
-        product_size: req.body.product_size,
-        product_type: req.body.product_type,
-        product_origin: req.body.product_origin,
-        product_ward: req.body.product_ward,
-        product_supplier: req.body.product_supplier,
-        product_discount: req.body.product_discount,
-        created_at: req.body.created_at
+        product_title: req.body.product.product_title,
+        product_price: req.body.product.product_price,
+        product_amount: req.body.product.product_amount,
+        product_des: req.body.product.product_des,
+        product_images_link: req.body.product.product_images_link,
+        product_images_list: req.body.product.product_images_list,
+        product_rate: req.body.product.product_rate,
+        product_size: req.body.product.product_size,
+        product_type: req.body.product.product_type,
+        product_origin: req.body.product.product_origin,
+        product_ward: req.body.product.product_ward,
+        product_supplier: req.body.product.product_supplier,
+        product_discount: req.body.product.product_discount,
+        created_at: req.body.product.created_at
       });
       const result = await product.save();
       res.json({
@@ -237,15 +268,6 @@ router.patch('/', async function (req, res, next) {
     res.status(400).json({
       status: 'error'
     });
-  }
-})
-
-
-router.put('/file', async function (req, res, next) {
-  try {
-    console.log(req.body)
-  } catch (error) {
-
   }
 })
 

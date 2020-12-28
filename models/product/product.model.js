@@ -15,6 +15,10 @@ const productSchema = new mongoose.Schema({
     required: true,
     default: 0
   },
+  product_sell_amount: {
+    type: Number,
+    default: 0
+  },
   product_des: {
     type: String
   },
